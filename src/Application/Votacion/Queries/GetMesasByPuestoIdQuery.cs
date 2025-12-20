@@ -14,6 +14,7 @@ public sealed class GetMesasByPuestoIdQueryHandler(AppDbContext db) : IRequestHa
   {
     return await db.MesasVotacion
         .Where(m => m.PuestoVotacionId == request.PuestoVotacionId)
+        .OrderBy(m => m.Nombre)
         .Select(m => new MesaVotacionDto(m.Id, m.Nombre))
         .ToListAsync(cancellationToken);
   }

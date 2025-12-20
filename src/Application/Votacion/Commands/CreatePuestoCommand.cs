@@ -15,7 +15,8 @@ public sealed class CreatePuestoCommandHandler(AppDbContext db) : IRequestHandle
 {
   public async Task<Result<CreatePuestoResponse>> Handle(CreatePuestoCommand request, CancellationToken cancellationToken)
   {
-    var existsNombre = db.PuestosVotacion.Any(p => p.Nombre == request.Nombre);
+    var nombrePuesto = request.Nombre.ToUpperInvariant();
+    var existsNombre = db.PuestosVotacion.Any(p => p.Nombre == nombrePuesto);
     if (existsNombre)
     {
       return Result<CreatePuestoResponse>.Fail(Error.Conflict("El nombre del puesto de votación ya existe.", "PuestoVotacion.Create.Exists"));
@@ -26,11 +27,11 @@ public sealed class CreatePuestoCommandHandler(AppDbContext db) : IRequestHandle
       return Result<CreatePuestoResponse>.Fail(Error.Validation("La cantidad de mesas debe ser mayor a 0.", "PuestoVotacion.Create.MesasMin"));
     }
 
-    var puesto = new PuestoVotacion { Nombre = request.Nombre };
+    var puesto = new PuestoVotacion { Nombre = nombrePuesto };
 
     for (int i = 1; i <= request.Mesas; i++)
     {
-      puesto.MesasVotacion.Add(new MesaVotacion { Nombre = $"Mesa {i}" });
+      puesto.MesasVotacion.Add(new MesaVotacion { Nombre = $"MESA {i}" });
     }
 
     db.PuestosVotacion.Add(puesto);

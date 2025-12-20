@@ -66,9 +66,9 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
         p.CodigosB != null ? p.CodigosB.Select(cb => cb.CodigoBId).ToList() : new List<int>(),
         p.PersonasACargo.Select(pa => pa.Id).ToList(),
         p.CreatedAt,
-        db.Users.Where(u => u.Id.ToString() == p.CreatedByUserId).Select(u => u.Persona != null ? u.Persona.Nombre + " " + u.Persona.Apellido : null).FirstOrDefault(),
+        db.Users.Where(u => u.Id.ToString() == p.CreatedByUserId).Select(u => (u.UserName ?? "").ToUpper()).FirstOrDefault(),
         p.LastModifiedAt,
-        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => u.Persona != null ? u.Persona.Nombre + " " + u.Persona.Apellido : null).FirstOrDefault()
+        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => (u.UserName ?? "").ToUpper()).FirstOrDefault()
       ))
       .FirstOrDefaultAsync(cancellationToken) is PersonaDto dto
         ? Result<PersonaDto?>.Ok(dto)

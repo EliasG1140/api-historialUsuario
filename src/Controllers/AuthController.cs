@@ -1,8 +1,8 @@
-
 using Application.Admin.Commands;
 using Application.Auth.Commands;
 using Application.Auth.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers;
@@ -16,6 +16,14 @@ public class AuthController(IMediator mediator) : ControllerBase
   public async Task<IActionResult> GetUsuarios(CancellationToken ct)
   {
     var result = await mediator.Send(new GetUserQuery(), ct);
+    return result.ToActionResult(this);
+  }
+
+  [Authorize]
+  [HttpPut("usuario/password")]
+  public async Task<IActionResult> ChangeOwnPassword([FromBody] ChangeOwnPasswordCommand command, CancellationToken ct)
+  {
+    var result = await mediator.Send(command, ct);
     return result.ToActionResult(this);
   }
 

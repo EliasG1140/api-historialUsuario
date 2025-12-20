@@ -66,10 +66,10 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
             persona.LiderId = null;
         }
 
-        persona.Nombre = request.Nombre;
-        persona.Apellido = request.Apellido;
+        persona.Nombre = request.Nombre.ToUpper();
+        persona.Apellido = request.Apellido.ToUpper();
         persona.Cedula = request.Cedula;
-        persona.Apodo = request.Apodo;
+        persona.Apodo = request.Apodo != null ? request.Apodo.ToUpper() : null;
         persona.Telefono = request.Telefono;
         persona.Direccion = request.Direccion;
         persona.Descripcion = request.Descripcion;

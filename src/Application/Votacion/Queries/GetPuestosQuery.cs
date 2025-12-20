@@ -17,6 +17,7 @@ public sealed class GetPuestosQueryHandler(AppDbContext db) : IRequestHandler<Ge
   {
     return await db.PuestosVotacion
       .Include(p => p.MesasVotacion)
+      .OrderBy(p => p.Nombre)
       .Select(p => new PuestoVotacionDto(
         p.Id,
         p.Nombre,

@@ -16,6 +16,7 @@ public sealed class UpdatePuestoCommandHandler(AppDbContext db) : IRequestHandle
 {
   public async Task<Result<UpdatePuestoResponse>> Handle(UpdatePuestoCommand request, CancellationToken cancellationToken)
   {
+    var nombrePuesto = request.Nombre.ToUpperInvariant();
     var puesto = await db.PuestosVotacion
         .Include(p => p.MesasVotacion)
         .FirstOrDefaultAsync(p => p.Id == request.PuestoVotacionId, cancellationToken);
@@ -24,7 +25,7 @@ public sealed class UpdatePuestoCommandHandler(AppDbContext db) : IRequestHandle
       return Result<UpdatePuestoResponse>.Fail(Error.NotFound("Puesto de votación no encontrado.", "PuestoVotacion.Update.NotFound"));
     }
 
-    var existsNombre = db.PuestosVotacion.Any(p => p.Nombre == request.Nombre && p.Id != request.PuestoVotacionId);
+    var existsNombre = db.PuestosVotacion.Any(p => p.Nombre == nombrePuesto && p.Id != request.PuestoVotacionId);
     if (existsNombre)
     {
       return Result<UpdatePuestoResponse>.Fail(Error.Conflict("El nombre del puesto de votación ya existe.", "PuestoVotacion.Update.Exists"));
@@ -58,11 +59,11 @@ public sealed class UpdatePuestoCommandHandler(AppDbContext db) : IRequestHandle
       int mesasActuales = puesto.MesasVotacion.Count;
       for (int i = mesasActuales + 1; i <= request.Mesas; i++)
       {
-        puesto.MesasVotacion.Add(new MesaVotacion { Nombre = $"Mesa {i}" });
+        puesto.MesasVotacion.Add(new MesaVotacion { Nombre = $"MESA {i}" });
       }
     }
 
-    puesto.Nombre = request.Nombre;
+    puesto.Nombre = nombrePuesto;
 
     await db.SaveChangesAsync(cancellationToken);
     return Result<UpdatePuestoResponse>.Ok(new UpdatePuestoResponse("Puesto de votación actualizado exitosamente."));

@@ -7,10 +7,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Auth.Commands;
 
 //* ------------------------------- Command ------------------------------- */
-public sealed record CreateUserCommand(string UserName, string Password, string Role, string Cedula) : IRequest<Result<Guid>>;
+public sealed record CreateUserCommand(string UserName, string Role, string Cedula) : IRequest<Result<CreateUserResponse>>;
 
 //* ------------------------------- Handler ------------------------------- */
-public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<Guid>>
+public sealed record CreateUserResponse(Guid UserId, string Password);
+
+public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<CreateUserResponse>>
 {
   private readonly UserManager<AppUser> _userManager;
   private readonly AppDbContext _db;
@@ -21,35 +23,62 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     _db = db;
   }
 
-  public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+  public async Task<Result<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
   {
-
-    var persona = await _db.Personas.FirstOrDefaultAsync(p => p.Cedula == request.Cedula, cancellationToken);
-    if (persona == null)
+    AppUser user;
+    var userNameUpper = request.UserName.ToUpperInvariant();
+    if (request.Role.ToUpperInvariant() == "ADMINISTRADOR")
     {
-      return Result<Guid>.Fail(Error.NotFound("persona.notfound", "No se encontró una persona registrada con la cédula especificada."));
+      user = new AppUser
+      {
+        UserName = userNameUpper
+      };
+    }
+    else if (request.Role.ToUpperInvariant() == "DIGITALIZADOR")
+    {
+      var persona = await _db.Personas.FirstOrDefaultAsync(p => p.Cedula == request.Cedula, cancellationToken);
+      if (persona == null)
+      {
+        return Result<CreateUserResponse>.Fail(Error.NotFound("No se encontró una persona registrada con la cédula especificada.", "persona.notfound"));
+      }
+
+      var existeUsuario = await _db.Users.AnyAsync(u => u.PersonaId == persona.Id, cancellationToken);
+      if (existeUsuario)
+      {
+        return Result<CreateUserResponse>.Fail(Error.Conflict("La persona ya tiene una cuenta de usuario asociada.", "user.persona.exists"));
+      }
+
+      user = new AppUser
+      {
+        UserName = userNameUpper,
+        PersonaId = persona.Id
+      };
+    }
+    else
+    {
+      return Result<CreateUserResponse>.Fail(Error.Validation("Rol no soportado para la creación de usuario.", "user.role.unsupported"));
     }
 
-    var user = new AppUser
-    {
-      UserName = request.UserName,
-      PersonaId = persona.Id
-    };
+    // Generar contraseña aleatoria de 6 caracteres alfanuméricos en mayúsculas
+    string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    var random = new Random();
+    var generatedPassword = new string(Enumerable.Repeat(chars, 6)
+      .Select(s => s[random.Next(s.Length)]).ToArray());
 
-    var result = await _userManager.CreateAsync(user, request.Password);
+    var result = await _userManager.CreateAsync(user, generatedPassword);
     if (!result.Succeeded)
     {
       var errorMsg = string.Join("; ", result.Errors.Select(e => e.Description));
-      return Result<Guid>.Fail(Error.Conflict("user.create", errorMsg));
+      return Result<CreateUserResponse>.Fail(Error.Conflict(errorMsg, "user.create"));
     }
 
     var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
     if (!roleResult.Succeeded)
     {
       var errorMsg = string.Join("; ", roleResult.Errors.Select(e => e.Description));
-      return Result<Guid>.Fail(Error.Conflict("user.role", errorMsg));
+      return Result<CreateUserResponse>.Fail(Error.Conflict(errorMsg, "user.role"));
     }
 
-    return Result<Guid>.Ok(user.Id);
+    return Result<CreateUserResponse>.Ok(new CreateUserResponse(user.Id, generatedPassword));
   }
 }

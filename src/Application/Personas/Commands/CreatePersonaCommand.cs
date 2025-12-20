@@ -52,10 +52,10 @@ public sealed class CreatePersonaCommandHandler : IRequestHandler<CreatePersonaC
 
     var persona = new Persona
     {
-      Nombre = request.Nombre,
-      Apellido = request.Apellido,
+      Nombre = request.Nombre.ToUpper(),
+      Apellido = request.Apellido.ToUpper(),
       Cedula = request.Cedula,
-      Apodo = request.Apodo ?? null,
+      Apodo = request.Apodo != null ? request.Apodo.ToUpper() : null,
       Telefono = request.Telefono,
       Direccion = request.Direccion,
       Descripcion = request.Descripcion ?? null,

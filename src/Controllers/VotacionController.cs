@@ -1,4 +1,3 @@
-
 using Application.Votacion.Commands;
 using Application.Votacion.Queries;
 using MediatR;
@@ -15,6 +14,16 @@ public class VotacionController(IMediator mediator) : ControllerBase
   {
     var result = await _mediator.Send(new GetPuestosQuery(), ct);
     return Ok(result);
+  }
+
+  [HttpGet("puestos/excel")]
+  public async Task<IActionResult> ExportPuestosVotacionToExcel(CancellationToken ct)
+  {
+    var result = await _mediator.Send(new ExportPuestosVotacionToExcelQuery(), ct);
+    if (!result.Succeeded || result.Value == null)
+      return BadRequest(result.Error);
+    var file = result.Value;
+    return File(file.Content, file.ContentType, file.FileName);
   }
 
   [HttpGet("puestos/consulta")]

@@ -38,6 +38,7 @@ public sealed class GetPuestosConsultaQueryHandler : IRequestHandler<GetPuestosC
     var puestos = await _db.PuestosVotacion
         .Include(p => p.MesasVotacion)
             .ThenInclude(m => m.Personas)
+        .OrderBy(m => m.Nombre)
         .Select(p => new PuestoVotacionDtoItem(
             p.Id,
             p.Nombre,
@@ -48,6 +49,7 @@ public sealed class GetPuestosConsultaQueryHandler : IRequestHandler<GetPuestosC
 
     var mesas = await _db.MesasVotacion
         .Include(m => m.Personas)
+        .OrderBy(m => m.Nombre)
         .Select(m => new MesaVotacionDtoItem(
             m.Id,
             m.Nombre,

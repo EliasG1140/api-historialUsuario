@@ -33,20 +33,38 @@ public class PersonaController(IMediator mediator) : ControllerBase
   }
 
   [HttpGet("excel")]
-  public async Task<IActionResult> ImportFromExcel(
+  public async Task<IActionResult> ExportPersonas(
     [FromQuery] int? lider,
     [FromQuery] bool? lideres,
     [FromQuery] int? puestoVotacion,
     [FromQuery] int? mesaVotacion,
+    [FromQuery] int? codigoB,
+    [FromQuery] int? codigoC,
+    [FromQuery] int? categoria,
     CancellationToken ct)
   {
     var query = new ExportPersonasToExcelQuery(
       Lider: lider,
       Lideres: lideres,
       PuestoVotacion: puestoVotacion,
-      MesaVotacion: mesaVotacion
+      MesaVotacion: mesaVotacion,
+      CodigoB: codigoB,
+      CodigoC: codigoC,
+      Categoria: categoria
     );
     var result = await _mediator.Send(query, ct);
+    if (!result.Succeeded)
+      return result.ToActionResult(this);
+
+    var file = result.Value!;
+    return File(file.Content, file.ContentType, file.FileName);
+  }
+
+  [HttpGet("lideres/excel")]
+  public async Task<IActionResult> ExportLideres(CancellationToken ct)
+  {
+
+    var result = await _mediator.Send(new ExportLideresToExcelQuery(), ct);
     if (!result.Succeeded)
       return result.ToActionResult(this);
 
@@ -62,13 +80,19 @@ public class PersonaController(IMediator mediator) : ControllerBase
     [FromQuery] bool? lideres,
     [FromQuery] int? puestoVotacion,
     [FromQuery] int? mesaVotacion,
+    [FromQuery] int? codigoB,
+    [FromQuery] int? codigoC,
+    [FromQuery] int? categoria,
     CancellationToken ct)
   {
     var query = new GetPersonasQuery(
       LiderId: lider,
       Lideres: lideres,
       PuestoVotacionId: puestoVotacion,
-      MesaVotacionId: mesaVotacion
+      MesaVotacionId: mesaVotacion,
+      CodigoBId: codigoB,
+      CodigoCId: codigoC,
+      CategoriaId: categoria
     );
     var result = await _mediator.Send(query, ct);
     return result.ToActionResult(this);
@@ -80,8 +104,6 @@ public class PersonaController(IMediator mediator) : ControllerBase
     var result = await _mediator.Send(new GetLideresQuery(), ct);
     return result.ToActionResult(this);
   }
-
-
 
   [HttpPut("{id:int}")]
   public async Task<IActionResult> Update(int id, [FromBody] UpdatePersonaCommand command, CancellationToken ct)
