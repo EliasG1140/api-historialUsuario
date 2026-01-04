@@ -11,12 +11,12 @@ public class Persona
   public string Cedula { get; set; } = null!;
   public string? Apodo { get; set; }
   public string Telefono { get; set; } = null!;
-  public string Direccion { get; set; } = null!;
+  public string? Direccion { get; set; } = null!;
   public string? Descripcion { get; set; }
   public bool IsLider { get; set; }
 
-  public int BarrioId { get; set; }
-  public Barrio Barrio { get; set; } = null!;
+  public int? BarrioId { get; set; }
+  public Barrio? Barrio { get; set; } = null!;
 
   public int CodigoCId { get; set; }
   public CodigoC CodigoC { get; set; } = null!;
@@ -32,7 +32,7 @@ public class Persona
   public int MesaVotacionId { get; set; }
   public MesaVotacion MesaVotacion { get; set; } = null!;
   public ICollection<PersonaCodigoB>? CodigosB { get; set; } = new List<PersonaCodigoB>();
-  public ICollection<PersonaLengua> Lenguas { get; set; } = new List<PersonaLengua>();
+  public ICollection<PersonaLengua>? Lenguas { get; set; } = new List<PersonaLengua>();
 
   // Auditoría
   public DateTime CreatedAt { get; set; }

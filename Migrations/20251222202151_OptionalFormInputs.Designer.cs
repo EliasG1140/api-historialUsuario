@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251222202151_OptionalFormInputs")]
+    partial class OptionalFormInputs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -578,7 +581,7 @@ namespace api.Migrations
                     b.Property<string>("Apodo")
                         .HasColumnType("text");
 
-                    b.Property<int?>("BarrioId")
+                    b.Property<int>("BarrioId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Cedula")
@@ -810,7 +813,8 @@ namespace api.Migrations
                     b.HasOne("Domain.Catalogos.Barrio", "Barrio")
                         .WithMany("Personas")
                         .HasForeignKey("BarrioId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Domain.Catalogos.CodigoC", "CodigoC")
                         .WithMany("Personas")

@@ -111,32 +111,36 @@ public sealed class GetPersonasQueryHandler(AppDbContext db) : IRequestHandler<G
     }
 
     var personas = await query
-        .Select(p => new PersonaListDto(
-            p.Id,
-            p.Nombre,
-            p.Apellido,
-            p.Cedula,
-            p.Apodo,
-            p.Telefono,
-            p.Direccion,
-            p.Descripcion,
-            p.IsLider,
-            new BarrioDto(p.Barrio!.Id, p.Barrio.Nombre),
-            new CodigoCDto(p.CodigoC!.Id, p.CodigoC.Nombre),
-            p.Lenguas != null ? p.Lenguas.Where(l => l.Lengua != null).Select(l => new LenguaDto(l.Lengua!.Id, l.Lengua.Nombre)).ToList() : new List<LenguaDto>(),
-            p.LiderId,
-            new MesaVotacionDto(
-                p.MesaVotacion!.Id,
-                p.MesaVotacion.Nombre,
-                new PuestoVotacionDto(
-                    p.MesaVotacion.PuestoVotacion!.Id,
-                    p.MesaVotacion.PuestoVotacion.Nombre
-                )
-            ),
-            p.CodigosB != null ? p.CodigosB.Where(cb => cb.CodigoB != null).Select(cb => new CodigoBDto(cb.CodigoB!.Id, cb.CodigoB.Nombre)).ToList() : new List<CodigoBDto>(),
-            p.PersonasACargo != null ? p.PersonasACargo.Select(pa => pa.Id).ToList() : new List<int>()
-        ))
-        .ToListAsync(cancellationToken);
+      .Select(p => new PersonaListDto(
+        p.Id,
+        p.Nombre,
+        p.Apellido,
+        p.Cedula,
+        p.Apodo,
+        p.Telefono,
+        p.Direccion ?? string.Empty,
+        p.Descripcion ?? string.Empty,
+        p.IsLider,
+        p.Barrio != null ? new BarrioDto(p.Barrio.Id, p.Barrio.Nombre ?? string.Empty) : new BarrioDto(0, string.Empty),
+        p.CodigoC != null ? new CodigoCDto(p.CodigoC.Id, p.CodigoC.Nombre ?? string.Empty) : new CodigoCDto(0, string.Empty),
+        p.Lenguas != null ? p.Lenguas.Where(l => l.Lengua != null).Select(l => new LenguaDto(l.Lengua.Id, l.Lengua.Nombre ?? string.Empty)).ToList() : new List<LenguaDto>(),
+        p.LiderId,
+        p.MesaVotacion != null ?
+          new MesaVotacionDto(
+            p.MesaVotacion.Id,
+            p.MesaVotacion.Nombre ?? string.Empty,
+            p.MesaVotacion.PuestoVotacion != null ?
+              new PuestoVotacionDto(
+                p.MesaVotacion.PuestoVotacion.Id,
+                p.MesaVotacion.PuestoVotacion.Nombre ?? string.Empty
+              ) :
+              new PuestoVotacionDto(0, string.Empty)
+          ) :
+          new MesaVotacionDto(0, string.Empty, new PuestoVotacionDto(0, string.Empty)),
+        p.CodigosB != null ? p.CodigosB.Where(cb => cb.CodigoB != null).Select(cb => new CodigoBDto(cb.CodigoB.Id, cb.CodigoB.Nombre ?? string.Empty)).ToList() : new List<CodigoBDto>(),
+        p.PersonasACargo != null ? p.PersonasACargo.Select(pa => pa.Id).ToList() : new List<int>()
+      ))
+      .ToListAsync(cancellationToken);
 
     return Result<List<PersonaListDto>>.Ok(personas);
   }

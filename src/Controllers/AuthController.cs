@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers;
 
-
 [ApiController]
 [Route("api/auth")]
 public class AuthController(IMediator mediator) : ControllerBase
@@ -24,6 +23,14 @@ public class AuthController(IMediator mediator) : ControllerBase
   public async Task<IActionResult> ChangeOwnPassword([FromBody] ChangeOwnPasswordCommand command, CancellationToken ct)
   {
     var result = await mediator.Send(command, ct);
+    return result.ToActionResult(this);
+  }
+
+  [Authorize]
+  [HttpGet("usuario/blocked")]
+  public async Task<IActionResult> IsCurrentUserBlocked(CancellationToken ct)
+  {
+    var result = await mediator.Send(new IsCurrentUserBlockedQuery(), ct);
     return result.ToActionResult(this);
   }
 

@@ -27,7 +27,6 @@ public class PersonaConfig : IEntityTypeConfiguration<Persona>
             .HasMaxLength(20);
 
         builder.Property(p => p.Direccion)
-            .IsRequired()
             .HasMaxLength(200);
 
         builder.Property(p => p.Descripcion)

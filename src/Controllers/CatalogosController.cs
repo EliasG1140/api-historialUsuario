@@ -126,6 +126,14 @@ public class CatalogoController(IMediator mediator) : ControllerBase
     return result.ToActionResult(this);
   }
 
+  [HttpPut("categorias/{id:int}")]
+  public async Task<IActionResult> UpdateCategoria(int id, [FromBody] UpdateCategoriaCommand command, CancellationToken ct)
+  {
+    command = command with { Id = id };
+    var result = await _mediator.Send(command, ct);
+    return result.ToActionResult(this);
+  }
+
   /* --------------------------------- Delete --------------------------------- */
   [HttpDelete("barrios/{id:int}")]
   public async Task<IActionResult> DeleteBarrio(int id, CancellationToken ct)

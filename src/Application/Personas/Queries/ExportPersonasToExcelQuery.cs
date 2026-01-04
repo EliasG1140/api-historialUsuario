@@ -33,6 +33,8 @@ public sealed class ExportPersonasToExcelQueryHandler(AppDbContext db)
       .AsNoTracking()
       .Include(p => p.Barrio)
       .Include(p => p.MesaVotacion).ThenInclude(m => m.PuestoVotacion)
+      .Include(p => p.Lenguas!)
+          .ThenInclude(pl => pl.Lengua)
       .AsQueryable();
 
     if (q.Lider is not null)
@@ -66,7 +68,6 @@ public sealed class ExportPersonasToExcelQueryHandler(AppDbContext db)
       query = query.Where(p => p.CodigoCId == q.CodigoC);
 
     var rows = await query
-      .Include(p => p.Lenguas).ThenInclude(pl => pl.Lengua)
       .Include(p => p.CodigosB!).ThenInclude(pb => pb.CodigoB)
       .Include(p => p.CodigoC)
       .OrderBy(p => p.Apellido)
@@ -78,14 +79,14 @@ public sealed class ExportPersonasToExcelQueryHandler(AppDbContext db)
         NumeroDoc = p.Cedula,
         p.Apodo,
         p.Telefono,
-        Barrio = p.Barrio.Nombre,
+        Barrio = p.Barrio != null ? p.Barrio.Nombre : string.Empty,
         p.Direccion,
-        Lenguas = p.Lenguas.Select(l => l.Lengua.Nombre),
-        Puesto = p.MesaVotacion.PuestoVotacion.Nombre,
-        Mesa = p.MesaVotacion.Nombre,
-        CodigosC = p.CodigoC.Nombre,
-        CodigosB = p.CodigosB!.Select(cb => cb.CodigoB.Nombre),
-        p.Descripcion,
+        Lenguas = p.Lenguas != null ? p.Lenguas.Where(l => l.Lengua != null).Select(l => l.Lengua.Nombre) : new List<string>(),
+        Puesto = p.MesaVotacion != null && p.MesaVotacion.PuestoVotacion != null ? p.MesaVotacion.PuestoVotacion.Nombre : string.Empty,
+        Mesa = p.MesaVotacion != null ? p.MesaVotacion.Nombre : string.Empty,
+        CodigosC = p.CodigoC != null ? p.CodigoC.Nombre : string.Empty,
+        CodigosB = p.CodigosB != null ? p.CodigosB.Where(cb => cb.CodigoB != null).Select(cb => cb.CodigoB.Nombre) : new List<string>(),
+        Descripcion = p.Descripcion ?? string.Empty,
         PersonasACargo = q.Lideres == true ? p.PersonasACargo.Count : (int?)null
       })
       .ToListAsync(ct);
@@ -118,14 +119,14 @@ public sealed class ExportPersonasToExcelQueryHandler(AppDbContext db)
       ws.Cell(r, 3).Value = x.NumeroDoc;
       ws.Cell(r, 4).Value = x.Apodo;
       ws.Cell(r, 5).Value = x.Telefono;
-      ws.Cell(r, 6).Value = x.Barrio;
-      ws.Cell(r, 7).Value = x.Direccion;
-      ws.Cell(r, 8).Value = string.Join(", ", x.Lenguas);
-      ws.Cell(r, 9).Value = x.Puesto;
-      ws.Cell(r, 10).Value = x.Mesa;
-      ws.Cell(r, 11).Value = x.CodigosC;
-      ws.Cell(r, 12).Value = string.Join(", ", x.CodigosB);
-      ws.Cell(r, 13).Value = x.Descripcion;
+      ws.Cell(r, 6).Value = x.Barrio ?? string.Empty;
+      ws.Cell(r, 7).Value = x.Direccion ?? string.Empty;
+      ws.Cell(r, 8).Value = x.Lenguas != null ? string.Join(", ", x.Lenguas) : string.Empty;
+      ws.Cell(r, 9).Value = x.Puesto ?? string.Empty;
+      ws.Cell(r, 10).Value = x.Mesa ?? string.Empty;
+      ws.Cell(r, 11).Value = x.CodigosC ?? string.Empty;
+      ws.Cell(r, 12).Value = x.CodigosB != null ? string.Join(", ", x.CodigosB) : string.Empty;
+      ws.Cell(r, 13).Value = x.Descripcion ?? string.Empty;
       if (q.Lideres == true)
         ws.Cell(r, 14).Value = x.PersonasACargo;
       r++;

@@ -14,12 +14,12 @@ public sealed record UpdatePersonaCommand(
     string Cedula,
     string? Apodo,
     string Telefono,
-    string Direccion,
-    string Descripcion,
+    string? Direccion,
+    string? Descripcion,
     bool EsLider,
-    int Barrio,
+    int? Barrio,
     int CodigoC,
-    List<int> Lengua,
+    List<int>? Lengua,
     int? Lider,
     int MesaVotacion,
     List<int>? CodigoB
@@ -66,13 +66,14 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
             persona.LiderId = null;
         }
 
+
         persona.Nombre = request.Nombre.ToUpper();
         persona.Apellido = request.Apellido.ToUpper();
         persona.Cedula = request.Cedula;
         persona.Apodo = request.Apodo != null ? request.Apodo.ToUpper() : null;
         persona.Telefono = request.Telefono;
-        persona.Direccion = request.Direccion;
-        persona.Descripcion = request.Descripcion;
+        persona.Direccion = request.Direccion ?? string.Empty;
+        persona.Descripcion = request.Descripcion ?? string.Empty;
         persona.IsLider = request.EsLider;
         persona.BarrioId = request.Barrio;
         persona.CodigoCId = request.CodigoC;
@@ -81,13 +82,19 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
         persona.LastModifiedAt = DateTime.UtcNow;
         persona.LastModifiedByUserId = userId;
 
-        persona.Lenguas.Clear();
+        if (persona.Lenguas != null)
+            persona.Lenguas.Clear();
+        else
+            persona.Lenguas = new List<PersonaLengua>();
         if (request.Lengua is { Count: > 0 })
         {
             persona.Lenguas = request.Lengua.Select(id => new PersonaLengua { PersonaId = persona.Id, LenguaId = id }).ToList();
         }
 
-        persona.CodigosB?.Clear();
+        if (persona.CodigosB != null)
+            persona.CodigosB.Clear();
+        else
+            persona.CodigosB = new List<PersonaCodigoB>();
         if (request.CodigoB is { Count: > 0 })
         {
             persona.CodigosB = request.CodigoB.Select(id => new PersonaCodigoB { PersonaId = persona.Id, CodigoBId = id }).ToList();

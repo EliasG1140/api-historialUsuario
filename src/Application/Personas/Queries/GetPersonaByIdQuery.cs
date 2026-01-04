@@ -36,9 +36,9 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
   public async Task<Result<PersonaDto?>> Handle(GetPersonaByIdQuery request, CancellationToken cancellationToken)
   {
     return await db.Personas
-      .Include(p => p.CodigosB)
+      .Include(p => p.CodigosB!)
       .Include(p => p.PersonasACargo)
-      .Include(p => p.Lenguas)
+      .Include(p => p.Lenguas!)
       .Include(p => p.User)
       .Where(p => p.Id == request.Id)
       .Select(p => new PersonaDto(
@@ -48,27 +48,31 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
         p.Cedula,
         p.Apodo,
         p.Telefono,
-        p.Direccion,
-        p.Descripcion,
+        p.Direccion ?? string.Empty,
+        p.Descripcion ?? string.Empty,
         p.IsLider,
-        p.BarrioId,
+        p.BarrioId ?? 0,
         p.CodigoCId,
-        p.Lenguas.Select(l => l.LenguaId).ToList(),
+        p.Lenguas != null ? p.Lenguas.Select(l => l.LenguaId).ToList() : new List<int>(),
         p.LiderId,
-         new MesaVotacionDto(
+        p.MesaVotacion != null ?
+            new MesaVotacionDto(
                 p.MesaVotacion.Id,
-                p.MesaVotacion.Nombre,
-                new PuestoVotacionDto(
-                    p.MesaVotacion.PuestoVotacion.Id,
-                    p.MesaVotacion.PuestoVotacion.Nombre
-                )
-            ),
+                p.MesaVotacion.Nombre ?? string.Empty,
+                p.MesaVotacion.PuestoVotacion != null ?
+                    new PuestoVotacionDto(
+                        p.MesaVotacion.PuestoVotacion.Id,
+                        p.MesaVotacion.PuestoVotacion.Nombre ?? string.Empty
+                    ) :
+                    new PuestoVotacionDto(0, string.Empty)
+            ) :
+            new MesaVotacionDto(0, string.Empty, new PuestoVotacionDto(0, string.Empty)),
         p.CodigosB != null ? p.CodigosB.Select(cb => cb.CodigoBId).ToList() : new List<int>(),
-        p.PersonasACargo.Select(pa => pa.Id).ToList(),
+        p.PersonasACargo != null ? p.PersonasACargo.Select(pa => pa.Id).ToList() : new List<int>(),
         p.CreatedAt,
-        db.Users.Where(u => u.Id.ToString() == p.CreatedByUserId).Select(u => (u.UserName ?? "").ToUpper()).FirstOrDefault(),
+        db.Users.Where(u => u.Id.ToString() == p.CreatedByUserId).Select(u => (u.UserName ?? string.Empty).ToUpper()).FirstOrDefault() ?? string.Empty,
         p.LastModifiedAt,
-        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => (u.UserName ?? "").ToUpper()).FirstOrDefault()
+        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => (u.UserName ?? string.Empty).ToUpper()).FirstOrDefault() ?? string.Empty
       ))
       .FirstOrDefaultAsync(cancellationToken) is PersonaDto dto
         ? Result<PersonaDto?>.Ok(dto)
