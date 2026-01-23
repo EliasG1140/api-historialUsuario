@@ -57,6 +57,13 @@ public class CatalogoController(IMediator mediator) : ControllerBase
     return result.ToActionResult(this);
   }
 
+  [HttpGet("coordinadores")]
+  public async Task<IActionResult> GetCoordinadores(CancellationToken ct)
+  {
+    var result = await _mediator.Send(new GetPersonaCoordinadorQuery(), ct);
+    return result.ToActionResult(this);
+  }
+
   /* ----------------------------------- Post ---------------------------------- */
   [HttpPost("barrios")]
   public async Task<IActionResult> CreateBarrio([FromBody] CreateBarrioCommand command, CancellationToken ct)

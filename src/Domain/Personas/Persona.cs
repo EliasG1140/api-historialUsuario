@@ -13,7 +13,6 @@ public class Persona
   public string Telefono { get; set; } = null!;
   public string? Direccion { get; set; } = null!;
   public string? Descripcion { get; set; }
-  public bool IsLider { get; set; }
 
   public int? BarrioId { get; set; }
   public Barrio? Barrio { get; set; } = null!;
@@ -21,10 +20,18 @@ public class Persona
   public int CodigoCId { get; set; }
   public CodigoC CodigoC { get; set; } = null!;
 
+  public string? Familia { get; set; }
+
   /* ------------------------------- Auto - Ref ------------------------------- */
+  public bool IsLider { get; set; }
   public int? LiderId { get; set; }
   public Persona? Lider { get; set; }
   public ICollection<Persona> PersonasACargo { get; set; } = new List<Persona>();
+
+  public bool IsCoordinador { get; set; }
+  public int? CoordinadorId { get; set; }
+  public Persona? Coordinador { get; set; }
+  public ICollection<Persona> Coordinados { get; set; } = new List<Persona>();
 
   /* -------------------------------- Relations ------------------------------- */
   public AppUser? User { get; set; }

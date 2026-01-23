@@ -7,7 +7,9 @@ namespace Application.Personas.Queries;
 //* ------------------------------- Query ------------------------------- */
 public sealed record GetPersonasQuery(
   int? LiderId = null,
+  int? CoordinadorId = null,
   bool? Lideres = null,
+  bool? Coordinadores = null,
   int? PuestoVotacionId = null,
   int? MesaVotacionId = null,
   int? CodigoBId = null,
@@ -25,6 +27,7 @@ public sealed record PersonaListDto(
     string Direccion,
     string? Descripcion,
     bool IsLider,
+    bool IsCoordinador,
     BarrioDto Barrio,
     CodigoCDto CodigoC,
     List<LenguaDto> Lenguas,
@@ -48,6 +51,8 @@ public sealed class GetPersonasQueryHandler(AppDbContext db) : IRequestHandler<G
   {
 
     var query = db.Personas
+      .AsNoTracking()
+      .AsSplitQuery()
       .Include(p => p.CodigosB!)
         .ThenInclude(cb => cb.CodigoB!)
       .Include(p => p.PersonasACargo)
@@ -62,21 +67,26 @@ public sealed class GetPersonasQueryHandler(AppDbContext db) : IRequestHandler<G
       .AsQueryable();
 
 
-    // Filtro por lideres (tiene prioridad sobre lider individual)
-    if (request.Lideres.HasValue)
+    // Filtro por coordinadores
+    if (request.Coordinadores.HasValue && request.Coordinadores.Value)
     {
-      query = query.Where(p => p.IsLider == request.Lideres.Value);
-
-      // Si solo queremos lideres, no filtramos por LiderId
-
-      // Lógica de categoría solo si Lideres == true y CategoriaId tiene valor
-      if (request.Lideres.Value && request.CategoriaId.HasValue)
+      query = query.Where(p => p.IsCoordinador);
+    }
+    // Filtro por lideres (tiene prioridad sobre lider individual)
+    else if (request.Lideres.HasValue && request.Lideres.Value)
+    {
+      query = query.Where(p => p.IsLider);
+      // Si se especifica CoordinadorId, filtrar los líderes bajo ese coordinador
+      if (request.CoordinadorId.HasValue)
       {
-        // Obtener la categoría
+        query = query.Where(p => p.CoordinadorId == request.CoordinadorId.Value);
+      }
+      // Lógica de categoría solo si Lideres == true y CategoriaId tiene valor
+      if (request.CategoriaId.HasValue)
+      {
         var categoria = await db.Categorias.FirstOrDefaultAsync(c => c.Id == request.CategoriaId.Value, cancellationToken);
         if (categoria != null)
         {
-          // Filtrar líderes por cantidad de personas a cargo dentro del rango de la categoría
           query = query.Where(p => p.PersonasACargo.Count >= categoria.Minimo && p.PersonasACargo.Count <= categoria.Maximo);
         }
       }
@@ -121,6 +131,7 @@ public sealed class GetPersonasQueryHandler(AppDbContext db) : IRequestHandler<G
         p.Direccion ?? string.Empty,
         p.Descripcion ?? string.Empty,
         p.IsLider,
+        p.IsCoordinador,
         p.Barrio != null ? new BarrioDto(p.Barrio.Id, p.Barrio.Nombre ?? string.Empty) : new BarrioDto(0, string.Empty),
         p.CodigoC != null ? new CodigoCDto(p.CodigoC.Id, p.CodigoC.Nombre ?? string.Empty) : new CodigoCDto(0, string.Empty),
         p.Lenguas != null ? p.Lenguas.Where(l => l.Lengua != null).Select(l => new LenguaDto(l.Lengua.Id, l.Lengua.Nombre ?? string.Empty)).ToList() : new List<LenguaDto>(),

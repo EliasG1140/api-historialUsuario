@@ -35,7 +35,9 @@ public class PersonaController(IMediator mediator) : ControllerBase
   [HttpGet("excel")]
   public async Task<IActionResult> ExportPersonas(
     [FromQuery] int? lider,
+    [FromQuery] int? coordinador,
     [FromQuery] bool? lideres,
+    [FromQuery] bool? coordinadores,
     [FromQuery] int? puestoVotacion,
     [FromQuery] int? mesaVotacion,
     [FromQuery] int? codigoB,
@@ -45,7 +47,9 @@ public class PersonaController(IMediator mediator) : ControllerBase
   {
     var query = new ExportPersonasToExcelQuery(
       Lider: lider,
+      Coordinador: coordinador,
       Lideres: lideres,
+      Coordinadores: coordinadores,
       PuestoVotacion: puestoVotacion,
       MesaVotacion: mesaVotacion,
       CodigoB: codigoB,
@@ -72,12 +76,26 @@ public class PersonaController(IMediator mediator) : ControllerBase
     return File(file.Content, file.ContentType, file.FileName);
   }
 
+  [HttpGet("coordinadores/excel")]
+  public async Task<IActionResult> ExportCoordinadores(CancellationToken ct)
+  {
+
+    var result = await _mediator.Send(new ExportCoordinadoresToExcelQuery(), ct);
+    if (!result.Succeeded)
+      return result.ToActionResult(this);
+
+    var file = result.Value!;
+    return File(file.Content, file.ContentType, file.FileName);
+  }
+
   /* ----------------------------------- Put ---------------------------------- */
   // GET /api/personas?lider={idLider}&lideres={true|false}&puestoVotacion={idPuesto}&mesaVotacion={idMesa}
   [HttpGet]
   public async Task<IActionResult> GetPersonas(
     [FromQuery] int? lider,
+    [FromQuery] int? coordinador,
     [FromQuery] bool? lideres,
+    [FromQuery] bool? coordinadores,
     [FromQuery] int? puestoVotacion,
     [FromQuery] int? mesaVotacion,
     [FromQuery] int? codigoB,
@@ -87,7 +105,9 @@ public class PersonaController(IMediator mediator) : ControllerBase
   {
     var query = new GetPersonasQuery(
       LiderId: lider,
+      CoordinadorId: coordinador,
       Lideres: lideres,
+      Coordinadores: coordinadores,
       PuestoVotacionId: puestoVotacion,
       MesaVotacionId: mesaVotacion,
       CodigoBId: codigoB,
@@ -102,6 +122,13 @@ public class PersonaController(IMediator mediator) : ControllerBase
   public async Task<IActionResult> GetLideres(CancellationToken ct)
   {
     var result = await _mediator.Send(new GetLideresQuery(), ct);
+    return result.ToActionResult(this);
+  }
+
+  [HttpGet("coordinadores")]
+  public async Task<IActionResult> GetCoordinadores(CancellationToken ct)
+  {
+    var result = await _mediator.Send(new GetCoordinadoresQuery(), ct);
     return result.ToActionResult(this);
   }
 

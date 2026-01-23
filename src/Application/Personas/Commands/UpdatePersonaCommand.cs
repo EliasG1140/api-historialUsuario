@@ -17,10 +17,13 @@ public sealed record UpdatePersonaCommand(
     string? Direccion,
     string? Descripcion,
     bool EsLider,
+    bool EsCoordinador,
     int? Barrio,
     int CodigoC,
     List<int>? Lengua,
     int? Lider,
+    int? Coordinador,
+    string? Familia,
     int MesaVotacion,
     List<int>? CodigoB
 ) : IRequest<Result<UpdatePersonaResponse>>;
@@ -52,6 +55,32 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
             return Result<UpdatePersonaResponse>.Fail(Error.Conflict("La cédula ya está registrada.", "Persona.Update.CedulaExists"));
         }
 
+        // Validaciones de asignación de lider y coordinador
+        if (request.EsCoordinador)
+        {
+            // Si es coordinador, no debe tener lider asignado
+            if (request.Lider != null)
+            {
+                return Result<UpdatePersonaResponse>.Fail(Error.Validation("Un coordinador no puede tener un líder asignado.", "Persona.Update.CoordinadorSinLider"));
+            }
+        }
+        else if (request.EsLider)
+        {
+            // Si es líder, debe tener un coordinador asignado
+            if (request.Coordinador == null)
+            {
+                return Result<UpdatePersonaResponse>.Fail(Error.Validation("Un líder debe tener un coordinador asignado.", "Persona.Update.LiderSinCoordinador"));
+            }
+        }
+        else
+        {
+            // Si no es ni líder ni coordinador, debe tener ambos asignados
+            if (request.Lider == null || request.Coordinador == null)
+            {
+                return Result<UpdatePersonaResponse>.Fail(Error.Validation("Debe asignar tanto un líder como un coordinador.", "Persona.Update.SinLiderNiCoordinador"));
+            }
+        }
+
         if (persona.IsLider && !request.EsLider)
         {
             var personasACargo = persona.PersonasACargo?.Count ?? 0;
@@ -75,10 +104,13 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
         persona.Direccion = request.Direccion ?? string.Empty;
         persona.Descripcion = request.Descripcion ?? string.Empty;
         persona.IsLider = request.EsLider;
+        persona.IsCoordinador = request.EsCoordinador;
+        persona.CoordinadorId = request.Coordinador;
         persona.BarrioId = request.Barrio;
         persona.CodigoCId = request.CodigoC;
         persona.LiderId = request.Lider;
         persona.MesaVotacionId = request.MesaVotacion;
+        persona.Familia = request.Familia != null ? request.Familia.Trim().ToUpper() : null;
         persona.LastModifiedAt = DateTime.UtcNow;
         persona.LastModifiedByUserId = userId;
 

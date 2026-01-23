@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260122154413_NewInputs")]
+    partial class NewInputs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -610,9 +613,6 @@ namespace api.Migrations
                     b.Property<string>("Familia")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsCoordinador")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsLider")
                         .HasColumnType("boolean");
 
@@ -831,8 +831,7 @@ namespace api.Migrations
 
                     b.HasOne("Domain.Personas.Persona", "Coordinador")
                         .WithMany("Coordinados")
-                        .HasForeignKey("CoordinadorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("CoordinadorId");
 
                     b.HasOne("Domain.Personas.Persona", "Lider")
                         .WithMany("PersonasACargo")

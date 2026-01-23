@@ -47,6 +47,11 @@ public class PersonaConfig : IEntityTypeConfiguration<Persona>
             .HasForeignKey(p => p.LiderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(p => p.Coordinador)
+            .WithMany(c => c.Coordinados)
+            .HasForeignKey(p => p.CoordinadorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Auditoría
         builder.Property(p => p.CreatedAt)
             .IsRequired();

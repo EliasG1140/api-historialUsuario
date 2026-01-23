@@ -17,10 +17,13 @@ public sealed record PersonaDto(
   string Direccion,
   string? Descripcion,
   bool IsLider,
+  bool IsCoordinador,
+  string Familia,
   int BarrioId,
   int CodigoCId,
   List<int> LenguasIds,
   int? LiderId,
+  int? CoordinadorId,
   MesaVotacionDto MesaVotacion,
   List<int>? CodigosBIds,
   List<int> PersonasACargoIds,
@@ -36,6 +39,8 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
   public async Task<Result<PersonaDto?>> Handle(GetPersonaByIdQuery request, CancellationToken cancellationToken)
   {
     return await db.Personas
+      .AsNoTracking()
+      .AsSplitQuery()
       .Include(p => p.CodigosB!)
       .Include(p => p.PersonasACargo)
       .Include(p => p.Lenguas!)
@@ -51,10 +56,13 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
         p.Direccion ?? string.Empty,
         p.Descripcion ?? string.Empty,
         p.IsLider,
+        p.IsCoordinador,
+        p.Familia ?? string.Empty,
         p.BarrioId ?? 0,
         p.CodigoCId,
         p.Lenguas != null ? p.Lenguas.Select(l => l.LenguaId).ToList() : new List<int>(),
         p.LiderId,
+        p.CoordinadorId,
         p.MesaVotacion != null ?
             new MesaVotacionDto(
                 p.MesaVotacion.Id,

@@ -16,10 +16,13 @@ public sealed record CreatePersonaCommand(
   string? Direccion,
   string? Descripcion,
   bool EsLider,
+  bool EsCoordinador,
   int? Barrio,
   int CodigoC,
   List<int>? Lengua,
+  string? Familia,
   int? Lider,
+  int? Coordinador,
   int MesaVotacion,
   List<int>? CodigoB
 ) : IRequest<Result<CreatePersonaResponse>>;
@@ -50,6 +53,28 @@ public sealed class CreatePersonaCommandHandler : IRequestHandler<CreatePersonaC
     string? userId = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value
       ?? user?.FindFirst("sub")?.Value;
 
+    if (request.EsCoordinador)
+    {
+      if (request.Lider != null)
+      {
+        return Result<CreatePersonaResponse>.Fail(Error.Validation("Un coordinador no puede tener un líder asignado.", "Persona.Create.CoordinadorSinLider"));
+      }
+    }
+    else if (request.EsLider)
+    {
+      if (request.Coordinador == null)
+      {
+        return Result<CreatePersonaResponse>.Fail(Error.Validation("Un líder debe tener un coordinador asignado.", "Persona.Create.LiderSinCoordinador"));
+      }
+    }
+    else
+    {
+      if (request.Lider == null || request.Coordinador == null)
+      {
+        return Result<CreatePersonaResponse>.Fail(Error.Validation("Debe asignar tanto un líder como un coordinador.", "Persona.Create.SinLiderNiCoordinador"));
+      }
+    }
+
     var persona = new Persona
     {
       Nombre = request.Nombre.ToUpper(),
@@ -60,10 +85,13 @@ public sealed class CreatePersonaCommandHandler : IRequestHandler<CreatePersonaC
       Direccion = request.Direccion ?? null,
       Descripcion = request.Descripcion ?? null,
       IsLider = request.EsLider,
+      IsCoordinador = request.EsCoordinador,
       BarrioId = request.Barrio ?? null,
       CodigoCId = request.CodigoC,
       LiderId = request.Lider,
+      CoordinadorId = request.Coordinador,
       MesaVotacionId = request.MesaVotacion,
+      Familia = request.Familia != null ? request.Familia.Trim().ToUpper() : null,
       CreatedAt = DateTime.UtcNow,
       CreatedByUserId = userId,
       LastModifiedAt = null,
