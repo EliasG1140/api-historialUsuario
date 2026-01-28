@@ -12,7 +12,7 @@ public sealed record CreatePersonaCommand(
   string Apellido,
   string Cedula,
   string? Apodo,
-  string Telefono,
+  string? Telefono,
   string? Direccion,
   string? Descripcion,
   bool EsLider,
@@ -23,8 +23,10 @@ public sealed record CreatePersonaCommand(
   string? Familia,
   int? Lider,
   int? Coordinador,
-  int MesaVotacion,
-  List<int>? CodigoB
+  int? MesaVotacion,
+  List<int>? CodigoB,
+  bool VerfAdres,
+  bool VerfPuestoVotacion
 ) : IRequest<Result<CreatePersonaResponse>>;
 
 public sealed record CreatePersonaResponse(int Id, string Message);
@@ -92,6 +94,8 @@ public sealed class CreatePersonaCommandHandler : IRequestHandler<CreatePersonaC
       CoordinadorId = request.Coordinador,
       MesaVotacionId = request.MesaVotacion,
       Familia = request.Familia != null ? request.Familia.Trim().ToUpper() : null,
+      VerfAdres = request.VerfAdres,
+      VerfPuestoVotacion = request.VerfPuestoVotacion,
       CreatedAt = DateTime.UtcNow,
       CreatedByUserId = userId,
       LastModifiedAt = null,

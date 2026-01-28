@@ -30,7 +30,9 @@ public sealed record PersonaDto(
   DateTime CreatedAt,
   string? CreatedBy,
   DateTime? LastModifiedAt,
-  string? LastModifiedBy
+  string? LastModifiedBy,
+  bool VerfAdres,
+  bool VerfPuestoVotacion
 );
 
 //* ------------------------------ Handler ------------------------------ */
@@ -52,7 +54,7 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
         p.Apellido,
         p.Cedula,
         p.Apodo,
-        p.Telefono,
+        p.Telefono ?? string.Empty,
         p.Direccion ?? string.Empty,
         p.Descripcion ?? string.Empty,
         p.IsLider,
@@ -80,7 +82,9 @@ public sealed class GetPersonaByIdQueryHandler(AppDbContext db) : IRequestHandle
         p.CreatedAt,
         db.Users.Where(u => u.Id.ToString() == p.CreatedByUserId).Select(u => (u.UserName ?? string.Empty).ToUpper()).FirstOrDefault() ?? string.Empty,
         p.LastModifiedAt,
-        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => (u.UserName ?? string.Empty).ToUpper()).FirstOrDefault() ?? string.Empty
+        db.Users.Where(u => u.Id.ToString() == p.LastModifiedByUserId).Select(u => (u.UserName ?? string.Empty).ToUpper()).FirstOrDefault() ?? string.Empty,
+        p.VerfAdres,
+        p.VerfPuestoVotacion
       ))
       .FirstOrDefaultAsync(cancellationToken) is PersonaDto dto
         ? Result<PersonaDto?>.Ok(dto)

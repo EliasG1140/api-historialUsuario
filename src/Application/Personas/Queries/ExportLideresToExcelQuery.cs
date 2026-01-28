@@ -25,7 +25,7 @@ public sealed class ExportLideresToExcelQueryHandler(AppDbContext db)
         p.Nombre,
         p.Apellido,
         NumeroDoc = p.Cedula,
-        Puesto = p.MesaVotacion.PuestoVotacion.Nombre,
+        Puesto = p.MesaVotacion != null && p.MesaVotacion.PuestoVotacion != null ? p.MesaVotacion.PuestoVotacion.Nombre : string.Empty,
         CantidadPersonasACargo = p.PersonasACargo.Count
       })
       .ToListAsync(ct);

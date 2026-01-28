@@ -12,6 +12,11 @@ public class MesaVotacionConfig : IEntityTypeConfiguration<MesaVotacion>
     b.HasKey(x => x.Id);
     b.Property(x => x.Nombre).HasMaxLength(150).IsRequired();
 
+    b.HasMany(m => m.Personas)
+      .WithOne(p => p.MesaVotacion)
+      .HasForeignKey(p => p.MesaVotacionId)
+      .OnDelete(DeleteBehavior.Restrict);
+
     b.HasData(
         new MesaVotacion { Id = 1, Nombre = "Mesa 1", PuestoVotacionId = 1 },
         new MesaVotacion { Id = 2, Nombre = "Mesa 2", PuestoVotacionId = 1 },

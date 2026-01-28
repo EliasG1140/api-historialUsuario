@@ -51,7 +51,7 @@ public sealed class GetLideresQueryHandler(AppDbContext db) : IRequestHandler<Ge
                 p.Apellido,
                 p.Cedula,
                 p.Apodo,
-                p.Telefono,
+                p.Telefono ?? string.Empty,
                 p.Direccion ?? string.Empty,
                 p.Descripcion ?? string.Empty,
                 p.IsLider,

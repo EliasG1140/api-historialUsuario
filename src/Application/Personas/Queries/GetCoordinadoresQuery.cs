@@ -51,7 +51,7 @@ public sealed class GetCoordinadoresQueryHandler(AppDbContext db) : IRequestHand
                 p.Apellido,
                 p.Cedula,
                 p.Apodo,
-                p.Telefono,
+                p.Telefono ?? string.Empty,
                 p.Direccion ?? string.Empty,
                 p.Descripcion ?? string.Empty,
                 p.IsCoordinador,

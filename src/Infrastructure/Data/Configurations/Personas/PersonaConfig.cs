@@ -23,8 +23,19 @@ public class PersonaConfig : IEntityTypeConfiguration<Persona>
             .HasMaxLength(20);
 
         builder.Property(p => p.Telefono)
-            .IsRequired()
             .HasMaxLength(20);
+
+        builder.Property(p => p.VerfAdres)
+            .IsRequired();
+
+        builder.Property(p => p.VerfPuestoVotacion)
+            .IsRequired();
+
+        builder.HasOne(p => p.MesaVotacion)
+            .WithMany(m => m.Personas)
+            .HasForeignKey(p => p.MesaVotacionId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(p => p.Direccion)
             .HasMaxLength(200);

@@ -10,7 +10,7 @@ public class Persona
   public string Apellido { get; set; } = null!;
   public string Cedula { get; set; } = null!;
   public string? Apodo { get; set; }
-  public string Telefono { get; set; } = null!;
+  public string? Telefono { get; set; } = null!;
   public string? Direccion { get; set; } = null!;
   public string? Descripcion { get; set; }
 
@@ -21,6 +21,9 @@ public class Persona
   public CodigoC CodigoC { get; set; } = null!;
 
   public string? Familia { get; set; }
+
+  public bool VerfAdres { get; set; } = false;
+  public bool VerfPuestoVotacion { get; set; } = false;
 
   /* ------------------------------- Auto - Ref ------------------------------- */
   public bool IsLider { get; set; }
@@ -36,8 +39,8 @@ public class Persona
   /* -------------------------------- Relations ------------------------------- */
   public AppUser? User { get; set; }
 
-  public int MesaVotacionId { get; set; }
-  public MesaVotacion MesaVotacion { get; set; } = null!;
+  public int? MesaVotacionId { get; set; }
+  public MesaVotacion? MesaVotacion { get; set; } = null!;
   public ICollection<PersonaCodigoB>? CodigosB { get; set; } = new List<PersonaCodigoB>();
   public ICollection<PersonaLengua>? Lenguas { get; set; } = new List<PersonaLengua>();
 

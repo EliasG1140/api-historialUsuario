@@ -13,7 +13,7 @@ public sealed record UpdatePersonaCommand(
     string Apellido,
     string Cedula,
     string? Apodo,
-    string Telefono,
+    string? Telefono,
     string? Direccion,
     string? Descripcion,
     bool EsLider,
@@ -24,8 +24,10 @@ public sealed record UpdatePersonaCommand(
     int? Lider,
     int? Coordinador,
     string? Familia,
-    int MesaVotacion,
-    List<int>? CodigoB
+    int? MesaVotacion,
+    List<int>? CodigoB,
+    bool VerfAdres,
+    bool VerfPuestoVotacion
 ) : IRequest<Result<UpdatePersonaResponse>>;
 
 public sealed record UpdatePersonaResponse(string Message);
@@ -111,6 +113,8 @@ public sealed class UpdatePersonaCommandHandler(AppDbContext db, IHttpContextAcc
         persona.LiderId = request.Lider;
         persona.MesaVotacionId = request.MesaVotacion;
         persona.Familia = request.Familia != null ? request.Familia.Trim().ToUpper() : null;
+        persona.VerfAdres = request.VerfAdres;
+        persona.VerfPuestoVotacion = request.VerfPuestoVotacion;
         persona.LastModifiedAt = DateTime.UtcNow;
         persona.LastModifiedByUserId = userId;
 

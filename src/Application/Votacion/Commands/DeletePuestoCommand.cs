@@ -23,7 +23,7 @@ public sealed class DeletePuestoCommandHandler(AppDbContext db) : IRequestHandle
     }
 
     var mesasIds = puesto.MesasVotacion.Select(m => m.Id).ToList();
-    var existePersona = await db.Personas.AnyAsync(p => mesasIds.Contains(p.MesaVotacionId), cancellationToken);
+    var existePersona = await db.Personas.AnyAsync(p => p.MesaVotacionId.HasValue && mesasIds.Contains(p.MesaVotacionId.Value), cancellationToken);
     if (existePersona)
     {
       return Result<DeletePuestoResponse>.Fail(Error.Conflict("No se puede eliminar el puesto porque alguna de sus mesas tiene personas asociadas.", "PuestoVotacion.Delete.MesasConPersonas"));
